@@ -36,7 +36,7 @@ static NSString *sample1024 = @"The Cranberries The Cranberries The Cranberries 
         NSString *toStr = [data componentsJoinedByString:@""];
         NSInteger total = toStr.length;
         long long time = [[NSDate date] timeIntervalSince1970] * 1000;
-        [self.webView evaluateJavaScript:[NSString stringWithFormat:@"window.onReiceived('%@',%ld, %lld)", toStr, (long)total, time] completionHandler:nil];
+        [self.webView evaluateJavaScript:[NSString stringWithFormat:@"window.onReceived('%@',%ld, %lld)", toStr, (long)total, time] completionHandler:nil];
     } else {
         NSLog(@"Nothing happened.");
     }
@@ -69,14 +69,14 @@ static NSString *sample1024 = @"The Cranberries The Cranberries The Cranberries 
     [submit addTarget:self action:@selector(check:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:submit];
     
-    NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://10.242.24.59:9999/index.html"]];
-    [self.webView loadRequest:req];
-//    NSURL *mainBundlePath = [[NSBundle mainBundle] URLForResource:@"index" withExtension:@"html"];
-//
-//    NSError *error;
-//    NSStringEncoding encoding = NSUTF8StringEncoding;
-//    NSString *content = [NSString stringWithContentsOfURL:mainBundlePath encoding:encoding error:&error];
-//    [self.webView loadHTMLString:content baseURL:[NSURL URLWithString:@"https://qian.163.com"]];
+    // NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://10.242.24.59:9999/index.html"]];
+    // [self.webView loadRequest:req];
+   NSURL *mainBundlePath = [[NSBundle mainBundle] URLForResource:@"index" withExtension:@"html"];
+
+   NSError *error;
+   NSStringEncoding encoding = NSUTF8StringEncoding;
+   NSString *content = [NSString stringWithContentsOfURL:mainBundlePath encoding:encoding error:&error];
+   [self.webView loadHTMLString:content baseURL:[NSURL URLWithString:@"https://qian.163.com"]];
 }
 
 - (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message
