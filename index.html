@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <fieldset>
+        <legend>测试字符串最多能多长</legend>
+        <input type="text" name="count" id="count" value="0"/>
+        <input type="button" name="increase by 1024B" onclick="inc();" value="increase + 1024"/>
+        <input type="button" name="file" value="try" onclick="upload(this)" />
+    </fieldset>
+    <span id="kind"></span>
+    <script type="text/javascript">
+        var countEle = document.getElementById('count');
+        function inc(){
+            countEle.value = parseInt(countEle.value) + 1024;
+        }
+        var sampe1024 = 'The Cranberries The Cranberries The Cranberries The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries 1239384283423423423423423424234552534234The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries 1239384283423423423423423424234552534234 The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries 1239384283423423423423423424234552534234 The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries 471589964142'
+        function upload(obj) {
+            var count = parseInt(countEle.value);
+            _upload(count)
+        }
+
+        function _upload(count){
+            if(count > 0) {
+                data = [];
+                var left = count % 1024;
+                for (var i = 0; i< count / 1024; i++)
+                {
+                    data.push(sampe1024);
+                }
+                // 把剩余的部分加进去
+                data.push(sampe1024.substring(0, left));
+                var content = data.join('');
+                send({
+                    content: content,
+                    time: (new Date()).getTime(),
+                    length: content.length
+                });
+            }
+        }
+
+        // 测试什么时候，send 出错，记录最小的出错值。
+        // 前提 是知道一个值是出错，如 10000M。
+        var high_water = 10485760000;
+        var low_water = 0;
+        var current_water = 0;
+        function hit_run(){
+            // 使用 2 分法查找最小的让报错 Out of memory
+            current_water = (high_water + low_water) / 2.0;
+            var out_of_mem = false;
+            try {
+                _upload(current_water)
+            } catch (e) {
+                out_of_mem = true;
+            } finally {
+                if (out_of_mem){
+                    console.log(current_water + ' is too much cost')
+                    high_water = current_water;
+                } else {
+                    console.log(current_water + ' is good, try hard.')
+                    low_water = current_water;
+                }
+                if(current_water < 10 || current_water > 10485760000 || low_water + 10 > high_water){
+                    // break; 循环结束
+                    console.log('The choosed one is ' + current_water);
+                } else {
+                    hit_run();
+                }
+            }
+
+        }
+
+        function send(obj){
+            // window.webkit.messageHandlers.f.postMessage(obj);
+        }
+
+        function onReiceived(_content, total, time){
+            var now = new Date().getTime();
+            console.log('Is equal = ' + (_content.length == total) + ',total = ' + total + ', CostTime = ' + (now - time));
+        }
+    </script>
+</body>
+
+</html>
