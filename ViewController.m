@@ -48,9 +48,16 @@ static NSString *sample1024 = @"The Cranberries The Cranberries The Cranberries 
     [self.view addSubview:self.webView];
     
     // 左边输入框，右边是添加按钮
+    UILabel *l = [UILabel new];
+    l.text = @"测试向 h5 发数据";
+    [l sizeToFit];
+    [self.view addSubview:l];
+    l.center = CGPointMake(100, 80);
+    
     _input = [UITextField new];
     _input.frame = CGRectMake(5, 100, 200, 34);
     [self.view addSubview:_input];
+    _input.placeholder = @"1048576";
     _input.layer.borderColor = [UIColor redColor].CGColor;
     _input.layer.borderWidth = 1.f;
     _input.textColor = [UIColor blueColor];

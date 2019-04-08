@@ -78,12 +78,13 @@
         }
 
         function send(obj){
-            // window.webkit.messageHandlers.f.postMessage(obj);
+            window.webkit.messageHandlers.f.postMessage(obj);
         }
 
         function onReiceived(_content, total, time){
             var now = new Date().getTime();
             console.log('Is equal = ' + (_content.length == total) + ',total = ' + total + ', CostTime = ' + (now - time));
+            _content = null;
         }
     </script>
 </body>
