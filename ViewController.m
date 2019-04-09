@@ -10,7 +10,7 @@
 
 @import WebKit;
 
-@interface ViewController () <WKScriptMessageHandler>
+@interface ViewController () <WKScriptMessageHandler, WKUIDelegate>
 
 @property (nonatomic, strong) WKWebView *webView;
 
@@ -18,6 +18,7 @@
 
 @implementation ViewController{
     UITextField *_input;
+    UIButton *_sendBtn;
 }
 
 static NSString *sample1024 = @"The Cranberries The Cranberries The Cranberries The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries 1239384283423423423423423424234552534234The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries 1239384283423423423423423424234552534234 The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries 1239384283423423423423423424234552534234 The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries 471589964142";
@@ -26,6 +27,7 @@ static NSString *sample1024 = @"The Cranberries The Cranberries The Cranberries 
     NSInteger i = [_input.text intValue];
     NSMutableArray *data = [NSMutableArray arrayWithCapacity:100];
     if (i > 0) {
+        _sendBtn.enabled = NO;
         NSInteger count = i / 1024;
         NSInteger left = i % 1024;
         for (NSInteger i = 0; i < count; i++) {
@@ -36,7 +38,11 @@ static NSString *sample1024 = @"The Cranberries The Cranberries The Cranberries 
         NSString *toStr = [data componentsJoinedByString:@""];
         NSInteger total = toStr.length;
         long long time = [[NSDate date] timeIntervalSince1970] * 1000;
-        [self.webView evaluateJavaScript:[NSString stringWithFormat:@"window.onReceived('%@',%ld, %lld)", toStr, (long)total, time] completionHandler:nil];
+        
+        [self.webView evaluateJavaScript:[NSString stringWithFormat:@"window.onReceived('%@',%ld, %lld)", toStr, (long)total, time] completionHandler:^(id _Nullable r, NSError * _Nullable error) {
+            self->_sendBtn.enabled = YES;
+            NSLog(@"Evaluate result = %@", r);
+        }];
     } else {
         NSLog(@"Nothing happened.");
     }
@@ -49,28 +55,28 @@ static NSString *sample1024 = @"The Cranberries The Cranberries The Cranberries 
     
     // 左边输入框，右边是添加按钮
     UILabel *l = [UILabel new];
-    l.text = @"测试向 h5 发数据";
+    l.text = @"Fill number( in bytes) which will be sent to H5";
     [l sizeToFit];
     [self.view addSubview:l];
-    l.center = CGPointMake(100, 80);
+    l.center = CGPointMake(180, 80);
     
     _input = [UITextField new];
     _input.frame = CGRectMake(5, 100, 200, 34);
     [self.view addSubview:_input];
-    _input.placeholder = @"1048576";
+    _input.placeholder = @"104857600";
+    _input.keyboardType = UIKeyboardTypeNumberPad;
     _input.layer.borderColor = [UIColor redColor].CGColor;
     _input.layer.borderWidth = 1.f;
     _input.textColor = [UIColor blueColor];
     
     UIButton *submit = [UIButton new];
     submit.frame = CGRectMake(210, 100, 60, 34);
-    [submit setTitle:@"try" forState:UIControlStateNormal];
+    [submit setTitle:@"Send to H5" forState:UIControlStateNormal];
     [submit setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [submit addTarget:self action:@selector(check:) forControlEvents:UIControlEventTouchUpInside];
+    _sendBtn = submit;
     [self.view addSubview:submit];
     
-    // NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://10.242.24.59:9999/index.html"]];
-    // [self.webView loadRequest:req];
    NSURL *mainBundlePath = [[NSBundle mainBundle] URLForResource:@"index" withExtension:@"html"];
 
    NSError *error;
@@ -87,15 +93,26 @@ static NSString *sample1024 = @"The Cranberries The Cranberries The Cranberries 
         NSString *content = [body objectForKey:@"content"];
         int bodyLen = [[body objectForKey:@"length"] intValue];
         long long time = [[NSDate date] timeIntervalSince1970] * 1000;
-        NSLog(@"body.length = %d, costtime = %lld", bodyLen, time - [[body objectForKey:@"time"] longLongValue]);
+        NSLog(@"body.length = %d, cost time = %lld", bodyLen, time - [[body objectForKey:@"time"] longLongValue]);
         NSLog(@"Is Equal ? %d", content.length == bodyLen);
     }
+}
+
+
+- (void)webView:(WKWebView *)webView runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(void))completionHandler{
+    
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert" message:message?:@"" preferredStyle:UIAlertControllerStyleAlert];
+    [alertController addAction:([UIAlertAction actionWithTitle:@"Confirm" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        completionHandler();
+    }])];
+    [self presentViewController:alertController animated:YES completion:nil];
+    
 }
 
 - (WKWebView *)webView
 {
     if (_webView == nil) {
-        // 设置加载页面完毕后，里面的后续请求，如 xhr 请求使用的cookie
+        //
         WKUserContentController *userContentController = [WKUserContentController new];
         [userContentController addScriptMessageHandler:self name:@"f"];
         WKWebViewConfiguration *webViewConfig = [[WKWebViewConfiguration alloc] init];
@@ -105,7 +122,7 @@ static NSString *sample1024 = @"The Cranberries The Cranberries The Cranberries 
     
         CGRect size = [[UIScreen mainScreen] bounds];
         WKWebView *webview = [[WKWebView alloc] initWithFrame:CGRectMake(0, 200, CGRectGetWidth(size), CGRectGetHeight(size)) configuration:webViewConfig];
-  
+        webview.UIDelegate = self;
         _webView = webview;
     }
     return _webView;

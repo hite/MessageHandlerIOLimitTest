@@ -10,16 +10,21 @@
 
 <body>
     <fieldset>
-        <legend>测试字符串最多能多长</legend>
-        <input type="text" name="count" id="count" value="0"/>
+        <legend>Test max length of data which can been sent to native</legend>
+        <input type="text" name="count" id="count" value="" style="display:block;width: 100%;" placeholder="length in bytes, for example 1048576"/>
         <input type="button" name="increase by 1024B" onclick="inc();" value="increase + 1024"/>
-        <input type="button" name="file" value="try" onclick="upload(this)" />
+        <input type="button" name="file" value="Send data to native" onclick="upload(this)" />
     </fieldset>
     <span id="kind"></span>
     <script type="text/javascript">
         var countEle = document.getElementById('count');
         function inc(){
-            countEle.value = parseInt(countEle.value) + 1024;
+            var v = countEle.value;
+            if(v.length == 0){
+                countEle.value = 1024;
+            } else {
+                countEle.value = parseInt(v) + 1024;
+            }
         }
         var sampe1024 = 'The Cranberries The Cranberries The Cranberries The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries 1239384283423423423423423424234552534234The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries 1239384283423423423423423424234552534234 The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The Cranberries 1239384283423423423423423424234552534234 The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries The Cranberries The CranberriesThe Cranberries The Cranberries The Cranberries The Cranberries 471589964142'
         function upload(obj) {
@@ -47,7 +52,7 @@
         }
 
         // 测试什么时候，send 出错，记录最小的出错值。
-        // 前提 是知道一个值是出错，如 10000M。
+        // 前提是知道一个值是出错，如 10000M。
         var high_water = 10485760000;
         var low_water = 0;
         var current_water = 0;
@@ -83,8 +88,10 @@
 
         function onReceived(_content, total, time){
             var now = new Date().getTime();
-            console.log('Is equal = ' + (_content.length == total) + ',total = ' + total + ', CostTime = ' + (now - time));
+            var succ = _content.length == total;
+            window.alert('Is equal = ' + (succ?'YES':'NO') + ',total = ' + total + ', CostTime = ' + (now - time));
             _content = null;
+            return succ;
         }
     </script>
 </body>
